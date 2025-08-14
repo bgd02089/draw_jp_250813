@@ -1,11 +1,11 @@
-
+<!DOCTYPE html>
 <html>
 <head>
     <meta charset="UTF-8">
     <title>Drawing Board</title>
     <style>
         body { margin: 0; text-align: center; }
-        canvas { border: 1px solid black; display: block; margin: 10px auto; background: white; }
+        canvas { border: 1px solid black; display: block; margin: 10px auto; background: white; touch-action: none; }
         button { margin: 5px; padding: 5px 10px; font-size: 14px; }
     </style>
 </head>
@@ -19,36 +19,59 @@
         const canvas = document.getElementById('board');
         const ctx = canvas.getContext('2d');
         let drawing = false;
-        let penColor = 'black'; // 기본 펜 색상
+        let penColor = 'black';
 
-        // 펜 설정
         function setPen() {
             penColor = 'black';
         }
 
-        // 전체 지우기
         function clearBoard() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
         }
 
-        // 마우스 이벤트
-        canvas.addEventListener('mousedown', () => {
+        // ===== PC 마우스 이벤트 =====
+        canvas.addEventListener('mousedown', (e) => {
             drawing = true;
             ctx.beginPath();
+            ctx.moveTo(e.offsetX, e.offsetY);
         });
         canvas.addEventListener('mouseup', () => {
             drawing = false;
         });
         canvas.addEventListener('mousemove', (e) => {
             if (!drawing) return;
+            drawLine(e.offsetX, e.offsetY);
+        });
+
+        // ===== 모바일 터치 이벤트 =====
+        canvas.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            drawing = true;
+            const rect = canvas.getBoundingClientRect();
+            const touch = e.touches[0];
+            ctx.beginPath();
+            ctx.moveTo(touch.clientX - rect.left, touch.clientY - rect.top);
+        });
+        canvas.addEventListener('touchend', () => {
+            drawing = false;
+        });
+        canvas.addEventListener('touchmove', (e) => {
+            e.preventDefault();
+            if (!drawing) return;
+            const rect = canvas.getBoundingClientRect();
+            const touch = e.touches[0];
+            drawLine(touch.clientX - rect.left, touch.clientY - rect.top);
+        });
+
+        function drawLine(x, y) {
             ctx.lineWidth = 2;
             ctx.lineCap = 'round';
             ctx.strokeStyle = penColor;
-            ctx.lineTo(e.offsetX, e.offsetY);
+            ctx.lineTo(x, y);
             ctx.stroke();
             ctx.beginPath();
-            ctx.moveTo(e.offsetX, e.offsetY);
-        });
+            ctx.moveTo(x, y);
+        }
     </script>
 </body>
 </html>
